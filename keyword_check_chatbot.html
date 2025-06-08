@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Keyword Check Chatbot</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f1f1f1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px;
+    }
+    .chatbox {
+      width: 100%;
+      max-width: 500px;
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .message {
+      margin: 10px 0;
+    }
+    .bot {
+      color: #333;
+    }
+    .user {
+      color: #0077cc;
+      text-align: right;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+      margin-top: 10px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    button {
+      background: #0077cc;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="chatbox" id="chat">
+    <div class="message bot" id="question">Question: What is your name?</div>
+  </div>
+  <input type="text" id="answerInput" placeholder="Type your answer here...">
+  <button onclick="submitAnswer()">Submit</button>
+
+  <script>
+    const questions = [
+      {
+        question: "What is your name?",
+        andKeyword: "name",
+        orKeywords: []
+      },
+      {
+        question: "What do you drink?",
+        andKeyword: "drink",
+        orKeywords: ["tea", "coffee"]
+      }
+    ];
+
+    let currentQuestion = 0;
+
+    function displayQuestion() {
+      document.getElementById("question").textContent = "Question: " + questions[currentQuestion].question;
+    }
+
+    function submitAnswer() {
+      const input = document.getElementById("answerInput");
+      const answer = input.value.trim();
+      if (!answer) return;
+
+      const chat = document.getElementById("chat");
+
+      // Add user message
+      const userMsg = document.createElement("div");
+      userMsg.className = "message user";
+      userMsg.textContent = answer;
+      chat.appendChild(userMsg);
+
+      const q = questions[currentQuestion];
+      const answerLower = answer.toLowerCase();
+
+      const hasAndKeyword = q.andKeyword ? answerLower.includes(q.andKeyword.toLowerCase()) : true;
+      const hasOrKeyword = q.orKeywords.some(keyword => answerLower.includes(keyword.toLowerCase()));
+
+      const botMsg = document.createElement("div");
+      botMsg.className = "message bot";
+
+      if (hasAndKeyword) {
+        botMsg.textContent = "✔️ Valid answer.";
+        currentQuestion++;
+        if (currentQuestion < questions.length) {
+          setTimeout(() => {
+            displayQuestion();
+          }, 1000);
+        } else {
+          setTimeout(() => {
+            botMsg.textContent += " You completed all questions!";
+          }, 1000);
+        }
+      } else if (hasOrKeyword) {
+        botMsg.textContent = `⚠️ Partial match with optional keyword. Consider including the required word "${q.andKeyword}".`;
+      } else {
+        botMsg.textContent = `❌ Invalid answer. Your answer must include the word "${q.andKeyword}".`;
+      }
+
+      chat.appendChild(botMsg);
+      input.value = "";
+    }
+
+    displayQuestion();
+  </script>
+</body>
+</html>
